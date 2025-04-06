@@ -13,7 +13,7 @@ def weighted_embeddings(layer, attention_mask, device='cuda'):
     sum_embeddings = torch.sum(layer * weights_for_non_padding.unsqueeze(-1), dim=1)
     num_of_non_padding_tokens = torch.sum(weights_for_non_padding, dim=-1).unsqueeze(-1)
     sentence_embeddings = sum_embeddings / num_of_non_padding_tokens
-    sentence_embeddings = sentence_embeddings.squeeze().to(torch.float16).cpu().numpy()
+    sentence_embeddings = sentence_embeddings.squeeze().to(torch.float32).cpu().numpy()
     return sentence_embeddings
 
 
@@ -22,7 +22,7 @@ def lasttoken_embeddings(layer, attention_mask, device='cuda'):
     idx_of_last_token = attention_mask.bool().sum().item() - 1  # scalar index
     # Extract the embedding from the layer
     embedding = layer[0, idx_of_last_token, :]  # shape: [hidden_dim]
-    sentence_embedding = embedding.to(torch.float16).cpu().numpy()
+    sentence_embedding = embedding.to(torch.float32).cpu().numpy()
     return sentence_embedding
 
 

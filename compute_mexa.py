@@ -7,6 +7,8 @@ from scipy.spatial.distance import cosine
 import argparse
 
 def cosine_similarity(array1, array2):
+    array1 = array1.astype(np.float64)
+    array2 = array2.astype(np.float64)
     cosine_dist = cosine(array1, array2)
     cosine_similarity = 1 - cosine_dist
     return cosine_similarity
