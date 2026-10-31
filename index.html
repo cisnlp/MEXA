@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MEXA Leaderboard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%8F%86%3C/text%3E%3C/svg%3E">
+<meta name="description" content="MEXA: multilingual evaluation of English-centric LLMs via cross-lingual alignment. Estimated scores for 9 LLMs on 200+ languages.">
+<style>
+:root {
+  --bg: #fafaf9; --surface: #ffffff; --border: #e7e5e4; --text: #1c1917; --muted: #78716c;
+  --accent: #b4234a; --accent-soft: #fbe9ee; --heat: 37, 99, 235; --bar: #2563eb; --row-hover: #f5f5f4;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 1px 8px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c0a09; --surface: #1c1917; --border: #2e2a27; --text: #f5f5f4; --muted: #a8a29e;
+    --accent: #f27a99; --accent-soft: #3a1621; --heat: 96, 145, 255; --bar: #6091ff; --row-hover: #26221f;
+    --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c0a09; --surface: #1c1917; --border: #2e2a27; --text: #f5f5f4; --muted: #a8a29e;
+  --accent: #f27a99; --accent-soft: #3a1621; --heat: 96, 145, 255; --bar: #6091ff; --row-hover: #26221f;
+  --shadow: none;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 32px 16px 48px; }
+header h1 { font-size: clamp(1.5rem, 3.2vw, 2.1rem); line-height: 1.2; margin: 0 0 6px; letter-spacing: -0.01em; }
+header h1 b { color: var(--accent); }
+header .sub { color: var(--muted); margin: 0 0 14px; font-size: 1.02rem; }
+.links { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.links a { border: 1px solid var(--border); background: var(--surface); color: var(--text); padding: 4px 12px;
+  border-radius: 999px; font-size: .9rem; }
+.links a:hover { border-color: var(--accent); text-decoration: none; }
+.about { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px;
+  box-shadow: var(--shadow); color: var(--text); margin-bottom: 18px; }
+.about p { margin: 0 0 8px; } .about p:last-child { margin: 0; }
+.about .muted { color: var(--muted); font-size: .92rem; }
+.stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 18px; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px;
+  min-width: 130px; box-shadow: var(--shadow); }
+.stat .n { font-size: 1.45rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+.stat .l { color: var(--muted); font-size: .85rem; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: end; margin-bottom: 12px; }
+.ctl label { display: block; font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em;
+  margin-bottom: 4px; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: transparent; color: var(--text); padding: 7px 14px; font: inherit; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.search { flex: 1 1 220px; }
+.search input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 9px; font: inherit;
+  background: var(--surface); color: var(--text); }
+.search input:focus, .seg button:focus-visible, .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+.chip { border: 1px solid var(--border); background: var(--surface); color: var(--muted); border-radius: 999px;
+  padding: 3px 11px; font: inherit; font-size: .86rem; cursor: pointer; }
+.chip[aria-pressed="true"] { color: var(--text); border-color: var(--accent); background: var(--accent-soft); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+.tablebox { overflow: auto; max-height: 72vh; }
+table { border-collapse: separate; border-spacing: 0; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 8px 12px; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--border); }
+th { position: sticky; top: 0; background: var(--surface); z-index: 2; font-size: .82rem; color: var(--muted);
+  font-weight: 600; cursor: pointer; user-select: none; }
+th:hover { color: var(--text); }
+th .arrow { opacity: .35; margin-left: 4px; } th.sorted .arrow { opacity: 1; color: var(--accent); }
+th.num, td.num { text-align: right; }
+tbody tr:hover td { background: var(--row-hover); }
+td.code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .86rem; color: var(--muted); }
+td.rank { color: var(--muted); width: 1%; }
+.barcell { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.bar { width: 70px; height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; flex: none; }
+.bar i { display: block; height: 100%; background: var(--bar); border-radius: 3px; }
+td.heat { text-align: right; }
+th.sticky-col, td.sticky-col { position: sticky; left: 0; background: var(--surface); z-index: 1; }
+th.sticky-col { z-index: 3; }
+.foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 10px 14px; color: var(--muted);
+  font-size: .86rem; border-top: 1px solid var(--border); }
+.legend { display: inline-flex; align-items: center; gap: 6px; }
+.legend .ramp { width: 120px; height: 8px; border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--heat), .04), rgba(var(--heat), .6)); }
+section.cite { margin-top: 28px; }
+section.cite h2 { font-size: 1.1rem; margin: 0 0 8px; }
+pre { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; overflow: auto;
+  font-size: .82rem; line-height: 1.45; margin: 0; }
+.copy { float: right; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 8px;
+  padding: 3px 10px; font: inherit; font-size: .82rem; cursor: pointer; margin: 0 0 8px 8px; }
+.filedesc { margin: -4px 0 12px; color: var(--muted); font-size: .92rem; }
+.filedesc code { font-size: .86rem; }
+.empty { padding: 28px; text-align: center; color: var(--muted); }
+.theme { position: absolute; top: 14px; right: 16px; }
+.theme button { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 8px;
+  padding: 4px 10px; font: inherit; font-size: .85rem; cursor: pointer; }
+@media (max-width: 640px) {
+  .wrap { padding-top: 48px; }
+  th, td { padding: 7px 9px; }
+  .bar { width: 44px; }
+}
+</style>
+</head>
+<body>
+<div class="theme"><button id="theme" type="button" aria-label="Switch colour theme">Theme</button></div>
+<div class="wrap">
+  <header>
+    <h1><b>MEXA</b> Leaderboard</h1>
+    <p class="sub" id="title">Multilingual Evaluation of English-Centric LLMs via Cross-Lingual Alignment</p>
+    <nav class="links" id="links"></nav>
+  </header>
+
+  <div class="about">
+    <p>MEXA assesses the multilingual capabilities of English-centric LLMs. These models use English as a kind of pivot
+      language in their intermediate layers, so MEXA computes the alignment between each language and English on
+      parallel sentences, and uses it to estimate how much of the model's English task performance transfers to that
+      language. Higher is better.</p>
+    <p class="muted"><b>ARC style</b>: mean pooling over layers, scaled by the model's English ARC score.
+      <b>Belebele style</b>: max pooling over layers, scaled by its English Belebele score.
+      <b>Average</b>: the mean of the two. Parallel data: FLORES-200 (first 100 devtest sentences) or the Bible (103 sentences).</p>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="controls">
+    <div class="ctl"><label>Parallel data</label><div class="seg" id="dataset"></div></div>
+    <div class="ctl"><label>View</label><div class="seg" id="view">
+      <button type="button" data-v="board" aria-pressed="true">Leaderboard</button>
+      <button type="button" data-v="matrix" aria-pressed="false">Languages × models</button>
+      <button type="button" data-v="tables" aria-pressed="false">Original tables</button></div></div>
+    <div class="ctl" id="fileCtl" hidden><label>Table</label><div class="seg" id="file"></div></div>
+    <div class="ctl" id="metricCtl" hidden><label>Score</label><div class="seg" id="metric">
+      <button type="button" data-v="average" aria-pressed="true">Average</button>
+      <button type="button" data-v="arc" aria-pressed="false">ARC</button>
+      <button type="button" data-v="belebele" aria-pressed="false">Belebele</button></div></div>
+    <div class="ctl search"><label for="q">Search</label>
+      <input id="q" type="search" placeholder="Search models, languages or codes (e.g. llama swahili, deu_Latn)"></div>
+  </div>
+  <div class="chips" id="models" aria-label="Models"></div>
+  <p class="filedesc" id="filedesc" hidden></p>
+
+  <div class="card">
+    <div class="tablebox"><table id="table"><thead></thead><tbody></tbody></table></div>
+    <div class="foot"><span id="count"></span>
+      <span class="legend" id="legend" hidden>low <span class="ramp"></span> high</span>
+      <span>Data: <a href="results/mexa_results.json">results/mexa_results.json</a></span></div>
+  </div>
+
+  <section class="cite">
+    <h2>Citation</h2>
+    <button class="copy" id="copy" type="button">Copy</button>
+    <pre id="bib">@inproceedings{kargaran-etal-2025-mexa,
+    title = "{MEXA}: Multilingual Evaluation of {E}nglish-Centric {LLM}s via Cross-Lingual Alignment",
+    author = "Kargaran, Amir Hossein  and
+      Modarressi, Ali  and
+      Nikeghbal, Nafiseh  and
+      Diesner, Jana  and
+      Yvon, Fran{\c{c}}ois  and
+      Schuetze, Hinrich",
+    editor = "Che, Wanxiang  and
+      Nabende, Joyce  and
+      Shutova, Ekaterina  and
+      Pilehvar, Mohammad Taher",
+    booktitle = "Findings of the Association for Computational Linguistics: ACL 2025",
+    month = jul,
+    year = "2025",
+    address = "Vienna, Austria",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.findings-acl.1385/",
+    doi = "10.18653/v1/2025.findings-acl.1385",
+    pages = "27001--27023",
+    ISBN = "979-8-89176-256-5",
+}</pre>
+  </section>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const fmt = v => v == null ? "–" : v.toFixed(4);
+const state = { dataset: "FLORES", view: "board", metric: "average", file: null, q: "", models: null, sort: null };
+let DATA;
+
+// theme toggle (remembered per browser)
+(() => {
+  let t = null;
+  try { t = localStorage.getItem("mexa-theme"); } catch (e) {}
+  if (t) document.documentElement.dataset.theme = t;
+  $("#theme").onclick = () => {
+    const dark = document.documentElement.dataset.theme
+      ? document.documentElement.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    const next = dark ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("mexa-theme", next); } catch (e) {}
+  };
+})();
+
+function rowsBoard() {
+  // One row per (model, language), as in the original leaderboard.
+  const s = DATA.scores[state.dataset], out = [];
+  for (const lang of Object.keys(s.arc)) {
+    for (const m of DATA.models) {
+      if (!state.models.has(m)) continue;
+      const arc = s.arc[lang].scores[m], bel = s.belebele[lang].scores[m];
+      out.push({ model: m, lang, name: DATA.languages[lang], arc, belebele: bel, average: (arc + bel) / 2 });
+    }
+  }
+  return out;
+}
+
+function rowsMatrix() {
+  // One row per language; a column per model with the chosen score, and the mean over the shown models.
+  const s = DATA.scores[state.dataset], models = DATA.models.filter(m => state.models.has(m)), out = [];
+  for (const lang of Object.keys(s.arc)) {
+    const r = { lang, name: DATA.languages[lang] };
+    let sum = 0;
+    for (const m of models) {
+      const arc = s.arc[lang].scores[m], bel = s.belebele[lang].scores[m];
+      r[m] = state.metric === "arc" ? arc : state.metric === "belebele" ? bel : (arc + bel) / 2;
+      sum += r[m];
+    }
+    r.mean = models.length ? sum / models.length : null;
+    out.push(r);
+  }
+  return out;
+}
+
+function rowsTable() {
+  // One original file: its rows in the original order and its columns (models, then avg) with the values as given.
+  const f = DATA.files.find(f => f.file === state.file);
+  return Object.entries(f.rows).map(([lang, v]) => ({ lang, name: DATA.languages[lang], ...v }));
+}
+
+function matches(r) {
+  if (!state.q) return true;
+  const hay = `${r.model || ""} ${r.name} ${r.lang}`.toLowerCase();
+  return state.q.toLowerCase().split(/\s+/).every(w => hay.includes(w));
+}
+
+function defaultOrder(rows) {
+  // Languages by their mean over models (best first), and in each language the models by score.
+  if (state.view === "tables") return rows;                     // original order
+  if (state.view === "matrix") return rows.sort((a, b) => b.mean - a.mean);
+  const byLang = {};
+  for (const r of rows) (byLang[r.lang] = byLang[r.lang] || []).push(r.average);
+  const mean = l => byLang[l].reduce((x, y) => x + y, 0) / byLang[l].length;
+  return rows.sort((a, b) => mean(b.lang) - mean(a.lang) || b.average - a.average);
+}
+
+function columns() {
+  if (state.view === "board") return [
+    { k: "rank", t: "#", cls: "rank num", nosort: true },
+    { k: "model", t: "Model" }, { k: "name", t: "Language" }, { k: "lang", t: "Code", cls: "code" },
+    { k: "average", t: "Average", cls: "num", bar: true }, { k: "arc", t: "ARC style", cls: "num" },
+    { k: "belebele", t: "Belebele style", cls: "num" }];
+  if (state.view === "tables") {
+    const f = DATA.files.find(f => f.file === state.file);
+    return [{ k: "rank", t: "#", cls: "rank num", nosort: true },
+      { k: "lang", t: "Code", cls: "code" }, { k: "name", t: "Language" },
+      ...f.columns.filter(c => c === "avg" || state.models.has(c)).map(c => ({ k: c, t: c, cls: "num", heat: true }))];
+  }
+  return [{ k: "rank", t: "#", cls: "rank num", nosort: true },
+    { k: "name", t: "Language", cls: "sticky-col" }, { k: "lang", t: "Code", cls: "code" },
+    { k: "mean", t: "Mean", cls: "num", bar: true },
+    ...DATA.models.filter(m => state.models.has(m)).map(m => ({ k: m, t: m, cls: "num", heat: true }))];
+}
+
+function render() {
+  const cols = columns();
+  let rows = (state.view === "board" ? rowsBoard() : state.view === "matrix" ? rowsMatrix() : rowsTable()).filter(matches);
+  rows = defaultOrder(rows);
+  if (state.sort) {
+    const { k, dir } = state.sort;
+    rows.sort((a, b) => (typeof a[k] === "string" ? a[k].localeCompare(b[k]) : (a[k] ?? -1) - (b[k] ?? -1)) * dir);
+  }
+  $("#table thead").innerHTML = "<tr>" + cols.map(c => {
+    const sorted = state.sort && state.sort.k === c.k;
+    const arrow = c.nosort ? "" : `<span class="arrow">${sorted ? (state.sort.dir > 0 ? "▲" : "▼") : "↕"}</span>`;
+    return `<th data-k="${c.k}" class="${c.cls || ""}${sorted ? " sorted" : ""}"${c.nosort ? "" : ' tabindex="0"'}
+      aria-sort="${sorted ? (state.sort.dir > 0 ? "ascending" : "descending") : "none"}">${esc(c.t)}${arrow}</th>`;
+  }).join("") + "</tr>";
+  const max = 1;
+  $("#table tbody").innerHTML = rows.length ? rows.map((r, i) => "<tr>" + cols.map(c => {
+    if (c.k === "rank") return `<td class="${c.cls}">${i + 1}</td>`;
+    const v = r[c.k];
+    if (c.bar) return `<td class="${c.cls}"><span class="barcell">${fmt(v)}<span class="bar"><i style="width:${
+      Math.max(0, Math.min(1, v / max)) * 100}%"></i></span></span></td>`;
+    if (c.heat) return `<td class="heat" style="background:rgba(var(--heat),${(0.04 + 0.56 * Math.max(0, Math.min(1, v))).toFixed(3)})"
+      title="${esc(c.k)} · ${esc(r.name)}: ${fmt(v)}">${fmt(v)}</td>`;
+    if (typeof v === "number") return `<td class="${c.cls || ""}">${fmt(v)}</td>`;
+    return `<td class="${c.cls || ""}">${esc(v)}</td>`;
+  }).join("") + "</tr>").join("") : `<tr><td class="empty" colspan="${cols.length}">No results match.</td></tr>`;
+  const nl = new Set(rows.map(r => r.lang)).size;
+  $("#count").textContent = state.view === "board"
+    ? `${rows.length} rows · ${nl} languages · ${new Set(rows.map(r => r.model)).size} models`
+    : `${rows.length} languages · ${state.models.size} models`;
+  $("#legend").hidden = state.view === "board";
+  $("#metricCtl").hidden = state.view !== "matrix";
+  $("#fileCtl").hidden = state.view !== "tables";
+  $("#dataset").closest(".ctl").hidden = state.view === "tables";
+  const f = DATA.files.find(f => f.file === state.file);
+  $("#filedesc").hidden = state.view !== "tables";
+  $("#filedesc").innerHTML = `<code>${esc(f.file)}</code>: ${esc(f.description)}. Rows and columns in the original order; <b>avg</b> is the file's own column (mean over the models).`;
+  document.querySelectorAll("#table th[tabindex]").forEach(th => {
+    const go = () => {
+      const k = th.dataset.k;
+      const numeric = !["model", "name", "lang"].includes(k);   // numbers sort high to low first
+      state.sort = state.sort && state.sort.k === k ? { k, dir: -state.sort.dir } : { k, dir: numeric ? -1 : 1 };
+      render();
+    };
+    th.onclick = go;
+    th.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } };
+  });
+}
+
+function seg(el, key, after) {
+  el.querySelectorAll("button").forEach(b => b.onclick = () => {
+    el.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    state[key] = b.dataset.v;
+    if (after) after();
+    render();
+  });
+}
+
+fetch("results/mexa_results.json").then(r => r.json()).then(d => {
+  DATA = d;
+  // scores[dataset][style][language] = { scores: {model: value}, average: the file's avg }
+  d.scores = {};
+  for (const f of d.files) {
+    (d.scores[f.dataset] = d.scores[f.dataset] || {})[f.style] = Object.fromEntries(
+      Object.entries(f.rows).map(([l, v]) => [l, { scores: v, average: v.avg }]));
+  }
+  state.models = new Set(d.models);
+  state.file = d.files[0].file;
+  $("#file").innerHTML = d.files.map((f, i) => `<button type="button" data-v="${esc(f.file)}" aria-pressed="${i === 0}"
+    title="${esc(f.description)}">${esc(f.file.replace(/^evals\//, "").replace(/\.csv$/, ""))}</button>`).join("");
+  $("#title").textContent = d.title.replace(/^MEXA:\s*/, "");
+  $("#links").innerHTML = [["Paper (ACL Findings 2025)", d.paper], ["arXiv", d.arxiv], ["Code", d.code],
+    ["Results (JSON)", "results/mexa_results.json"]].map(([t, u]) => `<a href="${esc(u)}">${esc(t)}</a>`).join("");
+  $("#dataset").innerHTML = Object.keys(d.datasets).map((k, i) =>
+    `<button type="button" data-v="${esc(k)}" aria-pressed="${i === 0}">${esc(k)}</button>`).join("");
+  $("#models").innerHTML = d.models.map(m => `<button type="button" class="chip" data-m="${esc(m)}" aria-pressed="true">${esc(m)}</button>`).join("");
+  $("#models").querySelectorAll(".chip").forEach(c => c.onclick = () => {
+    const m = c.dataset.m, on = state.models.has(m);
+    if (on && state.models.size === 1) return;        // keep at least one model
+    on ? state.models.delete(m) : state.models.add(m);
+    c.setAttribute("aria-pressed", !on);
+    render();
+  });
+  const stats = () => {
+    $("#stats").innerHTML = [[d.models.length, "models"], [Object.keys(d.scores[state.dataset].arc).length, `languages (${state.dataset})`],
+      [Object.keys(d.languages).length, "languages in total"], [2, "styles (ARC, Belebele)"]]
+      .map(([n, l]) => `<div class="stat"><div class="n">${n}</div><div class="l">${esc(l)}</div></div>`).join("");
+  };
+  stats();
+  seg($("#dataset"), "dataset", stats);
+  seg($("#view"), "view", () => { state.sort = null; });
+  seg($("#metric"), "metric");
+  seg($("#file"), "file", () => { state.sort = null; });
+  $("#q").oninput = e => { state.q = e.target.value.trim(); render(); };
+  render();
+}).catch(e => {
+  $("#table tbody").innerHTML = `<tr><td class="empty">Could not load results/mexa_results.json (${esc(e.message)}).</td></tr>`;
+});
+
+$("#copy").onclick = () => {
+  navigator.clipboard.writeText($("#bib").textContent).then(() => {
+    $("#copy").textContent = "Copied"; setTimeout(() => $("#copy").textContent = "Copy", 1500);
+  });
+};
+</script>
+</body>
+</html>

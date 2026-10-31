@@ -121,7 +121,7 @@ python compute_mexa.py --embedding_path ./embd_olmo/ --save_path ./mexa_olmo/ --
 
 ## Language Coverage — Computed Scores
 
-We host the estimated Mexa scores, which are calculated using mean and max pooling methods over layers and adjusted based on the models' performance in different tasks in English. These scores are available for popular state-of-the-art models based on FLORES and the Bible at https://huggingface.co/spaces/cis-lmu/Mexa.
+We host the estimated Mexa scores, which are calculated using mean and max pooling methods over layers and adjusted based on the models' performance in different tasks in English. These scores are available for popular state-of-the-art models based on FLORES and the Bible at https://cisnlp.github.io/MEXA, and all the numbers are in [`results/mexa_results.json`](results/mexa_results.json) (one entry per original table: dataset, pooling, the English task used to scale the scores, and every value with the original rows and columns).
 
 ## Citation
 
