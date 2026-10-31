@@ -4,7 +4,6 @@
  "paper": "https://aclanthology.org/2025.findings-acl.1385/",
  "arxiv": "https://arxiv.org/abs/2410.05873",
  "code": "https://github.com/cisnlp/MEXA",
- "source": "https://huggingface.co/spaces/cis-lmu/MEXA/tree/main/evals",
  "description": "Estimated MEXA scores: the alignment of each language with English in the model, computed on parallel sentences and scaled by the model's English score on a task. Higher is better. Each entry of 'files' is one original table, with its rows (languages) and columns (models, then avg) in the original order and every value as given.",
  "datasets": {
   "FLORES": "FLORES-200, first 100 sentences of devtest",
